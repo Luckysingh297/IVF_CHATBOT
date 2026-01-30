@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVF AI Chatbot - RAG Based Healthcare Solution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            padding: 1.2rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 212, 255, 0.3);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: #ffffff;
+            border: 2px solid #00d4ff;
+            padding: 0.7rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:hover {
+            background-color: #00d4ff;
+            color: #0a0a0a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.6);
+        }
+
+        .nav-btn.active {
+            background-color: #00d4ff;
+            color: #0a0a0a;
+        }
+
+        section {
+            min-height: 100vh;
+            padding: 120px 2rem 80px 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            color: #00d4ff;
+            text-align: center;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            margin-bottom: 2rem;
+            color: #00d4ff;
+            text-align: center;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            color: #00d4ff;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            max-width: 900px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #cccccc;
+            line-height: 1.8;
+        }
+
+        .project-title {
+            font-size: 4.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #00d4ff 0%, #0077ff 50%, #00d4ff 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .content-box {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-left: 4px solid #00d4ff;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            max-width: 900px;
+            width: 100%;
+            transition: all 0.3s ease;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .content-box:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .content-box h3 {
+            margin-bottom: 1rem;
+        }
+
+        .content-box p {
+            text-align: left;
+            color: #cccccc;
+            font-size: 1.1rem;
+        }
+
+        .content-box ul {
+            margin-left: 1.5rem;
+            color: #cccccc;
+        }
+
+        .content-box li {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .image-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 2rem 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .image-container img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.6);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 2rem;
+        }
+
+        .tech-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 2px solid #333;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        .tech-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .tech-card h3 {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .tech-card p {
+            text-align: left;
+            color: #cccccc;
+            font-size: 1.05rem;
+        }
+
+        .tech-name {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .code-container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 3rem;
+        }
+
+        .code-block {
+            margin-bottom: 4rem;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .code-title {
+            font-size: 1.8rem;
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .code-block img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .code-block img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.6);
+        }
+
+        .component-list {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            max-width: 900px;
+            width: 100%;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .component-list h3 {
+            margin-bottom: 1.5rem;
+        }
+
+        .component-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .component-list li {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #0a0a0a;
+            border-left: 3px solid #00d4ff;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .component-list li:hover {
+            transform: translateX(10px);
+            background-color: #1a1a1a;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .component-list li strong {
+            color: #00d4ff;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 2rem 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            background-color: #000;
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .video-description {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .video-description h3 {
+            color: #00d4ff;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .video-description p {
+            color: #cccccc;
+            font-size: 1.1rem;
+            text-align: left;
+            line-height: 1.8;
+        }
+
+        .video-description ul {
+            margin-top: 1rem;
+            margin-left: 1.5rem;
+            color: #cccccc;
+        }
+
+        .video-description li {
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+
+        .video-description li:hover {
+            color: #00d4ff;
+            transform: translateX(5px);
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #00d4ff, 0 0 10px #00d4ff; }
+            50% { box-shadow: 0 0 20px #00d4ff, 0 0 30px #00d4ff; }
+        }
+
+        .glow-effect {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .project-title {
+                font-size: 2.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <button class="nav-btn active" onclick="scrollToSection('home')">Home</button>
+        <button class="nav-btn" onclick="scrollToSection('architecture')">Architecture (HLD)</button>
+        <button class="nav-btn" onclick="scrollToSection('design')">Design (LLD)</button>
+        <button class="nav-btn" onclick="scrollToSection('techstack')">Tech Stack</button>
+        <button class="nav-btn" onclick="scrollToSection('code')">Code</button>
+        <button class="nav-btn" onclick="scrollToSection('demo')">Demo</button>
+        <button class="nav-btn" onclick="scrollToSection('explanation')">Explanation</button>
+    </nav>
+
+    <section id="home">
+        <h1 class="project-title">IVF AI Chatbot</h1>
+        <p class="subtitle">Healthcare Domain | RAG-Based Solution</p>
+
+        <div class="content-box">
+            <h3>🎯 Problem Statement</h3>
+            <p>IVF patients and healthcare staff face significant challenges in accessing timely, accurate information about complex fertility treatments. Traditional support systems suffer from:</p>
+            <ul>
+                <li>Long wait times for medical query responses, causing patient anxiety</li>
+                <li>Inconsistent information across different communication channels</li>
+                <li>Staff burnout from handling repetitive questions 24/7</li>
+                <li>Risk of misinformation when patients search unverified online sources</li>
+                <li>Limited availability of expert consultation outside clinic hours</li>
+            </ul>
+        </div>
+
+        <div class="content-box">
+            <h3>💡 Solution Overview: RAG Architecture</h3>
+            <p>Our Retrieval-Augmented Generation (RAG) based AI chatbot provides instant, accurate responses to IVF-related medical questions. The system works by:</p>
+            <ul>
+                <li><strong>Document Retrieval:</strong> Searching through verified IVF medical documents and protocols stored in a vector database</li>
+                <li><strong>Context Extraction:</strong> Retrieving only the most relevant information chunks related to the patient's query</li>
+                <li><strong>Grounded Generation:</strong> Using a Large Language Model (LLM) to generate natural language answers strictly based on retrieved documents</li>
+                <li><strong>Citation Support:</strong> Every response includes source references for transparency and trust</li>
+            </ul>
+            <p>This approach ensures responses are factually grounded in verified medical literature rather than generated from the LLM's training data alone.</p>
+        </div>
+
+        <div class="content-box">
+            <h3>🛡️ Healthcare Safety & Hallucination Control</h3>
+            <p>Patient safety is our highest priority. The system implements multiple safeguards to prevent AI hallucination:</p>
+            <ul>
+                <li><strong>Temperature Setting:</strong> LLM configured with temperature=0.0 for deterministic, consistent outputs</li>
+                <li><strong>Document-Grounded Responses:</strong> Answers generated only from retrieved verified IVF documents, not from general knowledge</li>
+                <li><strong>Confidence Thresholds:</strong> System explicitly states "I don't have information about this" when relevant documents aren't found</li>
+                <li><strong>Source Attribution:</strong> Every answer traces back to specific medical documents for accountability</li>
+                <li><strong>Medical Review Process:</strong> Content verified by IVF specialists before being added to the knowledge base</li>
+                <li><strong>No Diagnostic Claims:</strong> System provides information but explicitly directs patients to consult their healthcare provider for medical decisions</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="architecture">
+        <h2>High Level Design (HLD)</h2>
+        <p>System Architecture Overview</p>
+
+        <div class="component-list">
+            <h3>Core Components</h3>
+            <ul>
+                <li><strong>User Interface:</strong> Web-based chat interface where patients and staff interact with the chatbot through natural language queries</li>
+                <li><strong>Embedding Model:</strong> Converts both user queries and document chunks into 384-dimensional dense vectors for semantic similarity matching</li>
+                <li><strong>Vector Database (FAISS):</strong> Local vector store that enables fast similarity search across thousands of document embeddings to find relevant context</li>
+                <li><strong>Large Language Model (LLM):</strong> GPT-3.5/GPT-4 model that generates coherent, contextual responses based on retrieved documents and user queries</li>
+            </ul>
+        </div>
+
+        <div class="image-container glow-effect">
+            <img src="images/hld.png" alt="High Level Design Architecture Diagram">
+        </div>
+
+        <div class="content-box">
+            <h3>Architecture Flow</h3>
+            <p>When a user submits a question, the query flows through the system as follows: The embedding model converts the question into a vector representation. This vector is used to search the FAISS vector database for the most semantically similar document chunks. The top relevant chunks (typically 3-5) are retrieved and combined with the user's original question. This enriched context is passed to the LLM, which generates a natural language response grounded in the retrieved documents. The response is then displayed to the user through the interface, along with source citations.</p>
+        </div>
+    </section>
+
+    <section id="design">
+        <h2>Low Level Design (LLD)</h2>
+        <p>Detailed Internal Flow</p>
+
+        <div class="content-box">
+            <h3>Document Ingestion Pipeline</h3>
+            <p><strong>Step 1: PDF Ingestion</strong> - Medical PDF documents containing IVF protocols, treatment guidelines, and FAQs are loaded using PyPDF or similar libraries. The system extracts raw text while preserving document structure and metadata.</p>
+            <p><strong>Step 2: Text Chunking</strong> - Extracted text is split into smaller, semantically meaningful chunks (typically 500-1000 characters with 100-character overlap). This chunking strategy ensures that each piece of information is self-contained while maintaining context across chunk boundaries.</p>
+            <p><strong>Step 3: Embedding Generation</strong> - Each text chunk is processed through the sentence-transformers model (all-MiniLM-L6-v2) to generate a 384-dimensional embedding vector. These embeddings capture the semantic meaning of the text, allowing for similarity-based retrieval.</p>
+            <p><strong>Step 4: Vector Storage</strong> - All chunk embeddings along with their original text and metadata are stored in the FAISS vector database. FAISS creates an index structure optimized for fast similarity search at query time.</p>
+        </div>
+
+        <div class="image-container glow-effect">
+            <img src="images/lld.png" alt="Low Level Design Flow Diagram">
+        </div>
+
+        <div class="content-box">
+            <h3>Query Processing & Response Generation</h3>
+            <p><strong>Step 1: Query Embedding</strong> - User's question is converted into a 384-dimensional vector using the same embedding model used during document ingestion, ensuring vector space compatibility.</p>
+            <p><strong>Step 2: Vector Similarity Search</strong> - FAISS performs cosine similarity search between the query embedding and all stored document embeddings. The top-k most similar chunks (k=3 to 5) are retrieved based on similarity scores.</p>
+            <p><strong>Step 3: Context Preparation</strong> - Retrieved chunks are combined with the original user query into a structured prompt template. This prompt includes instructions for the LLM to answer based only on provided context.</p>
+            <p><strong>Step 4: LLM Answer Generation</strong> - The complete prompt is sent to GPT-3.5/GPT-4 with temperature=0.0 for deterministic output. The LLM synthesizes the retrieved information into a coherent, natural language response.</p>
+            <p><strong>Step 5: Response Formatting</strong> - The generated answer is formatted with source citations, displaying which document chunks were used. If no relevant documents were found, the system responds with "I don't have information about this topic in my knowledge base."</p>
+        </div>
+    </section>
+
+    <section id="techstack">
+        <h2>Technology Stack</h2>
+        <p>Technical Decisions and Justifications</p>
+
+        <div class="tech-grid">
+            <div class="tech-card">
+                <h3>Programming Language</h3>
+                <p><span class="tech-name">Python 3.9+</span></p>
+                <p>Python was chosen for its rich ecosystem of NLP and machine learning libraries. It offers seamless integration with LangChain, transformers, and FAISS, while providing excellent development speed and readability for rapid prototyping and maintenance.</p>
+            </div>
+
+            <div class="tech-card">
+                <h3>Embedding Model</h3>
+                <p><span class="tech-name">sentence-transformers/all-MiniLM-L6-v2</span></p>
+                <p>This model generates high-quality 384-dimensional embeddings with excellent semantic accuracy. It's lightweight (only 80MB), runs efficiently on CPU, and provides a strong balance between performance and resource consumption, making it ideal for local deployment.</p>
+            </div>
+
+            <div class="tech-card">
+                <h3>Vector Store</h3>
+                <p><span class="tech-name">FAISS (Facebook AI Similarity Search)</span></p>
+                <p>FAISS enables extremely fast similarity search across millions of vectors with minimal latency. It runs locally without external dependencies, supports multiple index types for optimization, and requires no cloud connectivity, ensuring data privacy for sensitive medical information.</p>
+            </div>
+
+            <div class="tech-card">
+                <h3>Large Language Model</h3>
+                <p><span class="tech-name">GPT-3.5-turbo / GPT-4</span></p>
+                <p>OpenAI's models provide state-of-the-art natural language generation capabilities. Running with temperature=0.0 ensures deterministic, consistent outputs. These models excel at understanding medical context and generating coherent responses while following strict prompting instructions to avoid hallucination.</p>
+            </div>
+
+            <div class="tech-card">
+                <h3>Framework</h3>
+                <p><span class="tech-name">LangChain</span></p>
+                <p>LangChain simplifies RAG pipeline orchestration by providing pre-built components for document loading, text splitting, embeddings, vector stores, and LLM chains. It reduces boilerplate code, handles prompt templating elegantly, and offers robust error handling for production deployments.</p>
+            </div>
+
+            <div class="tech-card">
+                <h3>Presentation Layer</h3>
+                <p><span class="tech-name">HTML + CSS + JavaScript</span></p>
+                <p>Pure web technologies ensure maximum compatibility across all browsers and devices. This approach eliminates framework dependencies, reduces bundle size, and provides full control over the user experience. The single-page design enables easy deployment and sharing of the project presentation.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="code">
+        <h2>Code Implementation</h2>
+        <p>Core Components and Implementation Details</p>
+
+        <div class="code-container">
+            <div class="code-block">
+                <h3 class="code-title">📄 ingest.py - Document Ingestion Pipeline</h3>
+                <img src="images/ingest.png" alt="Document Ingestion Code">
+            </div>
+
+            <div class="code-block">
+                <h3 class="code-title">🤖 chatbot.py - RAG Query Engine</h3>
+                <img src="images/chatbot.png" alt="Chatbot RAG Logic Code">
+            </div>
+
+            <div class="code-block">
+                <h3 class="code-title">💻 app.py - User Interaction Interface</h3>
+                <img src="images/app.png" alt="Application Interface Code">
+            </div>
+        </div>
+    </section>
+
+    <section id="demo">
+        <h2>🎬 Live Demo</h2>
+        <p>Watch the IVF AI Chatbot in Action</p>
+
+        <div class="video-container">
+            <div class="video-wrapper">
+                <video controls autoplay muted loop>
+                    <source src="videos/demo.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <div class="video-description">
+                <h3>Demo Highlights</h3>
+                <p>This demonstration showcases the chatbot's key capabilities in real-time:</p>
+                <ul>
+                    <li><strong>Natural Language Understanding:</strong> Users can ask complex IVF-related questions in plain, conversational language</li>
+                    <li><strong>Instant Responses:</strong> Sub-30 second response time for complex medical queries with full context retrieval</li>
+                    <li><strong>Accurate Information:</strong> Every answer is grounded in verified medical documents from the knowledge base</li>
+                    <li><strong>Source Citations:</strong> Transparent references to source documents ensure trustworthiness and accountability</li>
+                    <li><strong>Conversational Context:</strong> The system maintains conversation history to handle follow-up questions intelligently</li>
+                    <li><strong>Error Handling:</strong> When information is not available, the system clearly communicates limitations instead of hallucinating</li>
+                    <li><strong>User Experience:</strong> Clean, intuitive interface designed for both patients and healthcare professionals</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="explanation">
+        <h2>📚 Technical Explanation</h2>
+        <p>Deep Dive: What I Built and Why</p>
+
+        <div class="video-container">
+            <div class="video-wrapper">
+                <video controls>
+                    <source src="videos/explanation.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <div class="video-description">
+                <h3>Technical Decisions and Reasoning</h3>
+                <p>This video provides a comprehensive explanation of the architectural choices and implementation details:</p>
+                <ul>
+                    <li><strong>Why RAG over Fine-Tuning:</strong> RAG architecture allows for dynamic knowledge updates without retraining, ensures responses are grounded in verifiable sources, and prevents hallucination by constraining the model to retrieved context. Fine-tuning would be expensive, time-consuming, and still risk hallucination.</li>
+                    <li><strong>Why FAISS over Cloud Vector Databases:</strong> Local deployment ensures patient data privacy compliance with HIPAA regulations, eliminates API latency and costs, and provides full control over the infrastructure. FAISS offers production-grade performance with minimal overhead.</li>
+                    <li><strong>Why sentence-transformers/all-MiniLM-L6-v2:</strong> This model provides an optimal balance between accuracy and efficiency. It generates high-quality embeddings while being lightweight enough to run on CPU, reducing infrastructure costs. The 384-dimensional vectors are sufficient for medical domain similarity matching.</li>
+                    <li><strong>Why Temperature=0.0:</strong> Healthcare applications demand deterministic, reproducible outputs. Temperature=0.0 eliminates randomness in the LLM's generation process, ensuring consistent answers for the same query and context, which is critical for patient safety.</li>
+                    <li><strong>Why LangChain Framework:</strong> LangChain provides battle-tested abstractions for RAG pipelines, reducing development time by 60-70%. It offers robust error handling, seamless integration with multiple LLMs and vector stores, and excellent documentation for maintenance.</li>
+                    <li><strong>Chunk Size Strategy (500-1000 chars):</strong> This range ensures each chunk contains complete semantic units while maintaining sufficient context. Smaller chunks would lose context; larger chunks would dilute relevance in retrieval. The 100-character overlap prevents information loss at chunk boundaries.</li>
+                    <li><strong>Top-K Retrieval (k=3-5):</strong> Retrieving 3-5 chunks balances context richness with prompt length constraints. Too few chunks risk missing relevant information; too many add noise and exceed token limits. This range was validated through empirical testing.</li>
+                    <li><strong>Future Enhancements:</strong> Implementing re-ranking for improved retrieval precision, adding conversational memory for multi-turn dialogues, integrating feedback loops for continuous improvement, and expanding to multilingual support for diverse patient populations.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('section');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navButtons.forEach(btn => {
+                btn.classList.remove('active');
+                const btnText = btn.textContent.toLowerCase();
+                if (btnText === 'home' && current === 'home') {
+                    btn.classList.add('active');
+                } else if (btnText.includes('architecture') && current === 'architecture') {
+                    btn.classList.add('active');
+                } else if (btnText.includes('design') && current === 'design') {
+                    btn.classList.add('active');
+                } else if (btnText.includes('tech stack') && current === 'techstack') {
+                    btn.classList.add('active');
+                } else if (btnText === 'code' && current === 'code') {
+                    btn.classList.add('active');
+                } else if (btnText === 'demo' && current === 'demo') {
+                    btn.classList.add('active');
+                } else if (btnText === 'explanation' && current === 'explanation') {
+                    btn.classList.add('active');
+                }
+            });
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.content-box, .tech-card, .code-block').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

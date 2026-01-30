@@ -3,9 +3,6 @@ from langchain_community.vectorstores import FAISS
 from langchain.embeddings.base import Embeddings
 from sentence_transformers import SentenceTransformer
 
-# -----------------------------
-# Embeddings (MUST inherit)
-# -----------------------------
 class LocalEmbeddings(Embeddings):
     def __init__(self):
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -22,9 +19,7 @@ vectorstore = FAISS.load_local(
     allow_dangerous_deserialization=True
 )
 
-# -----------------------------
-# RAG FUNCTION
-# -----------------------------
+
 def ask_question(question: str, mode: str) -> str:
     docs = vectorstore.similarity_search(question, k=4)
 

@@ -1,9 +1,7 @@
 import sys
 import os
 
-# -------------------------------
-# Ensure venv is active
-# -------------------------------
+
 if ".venv" not in sys.executable:
     raise RuntimeError("❌ Virtual environment not activated")
 
@@ -18,9 +16,7 @@ from sentence_transformers import SentenceTransformer
 
 VECTOR_DB_DIR = "faiss_index"
 
-# -------------------------------
-# Embeddings OBJECT (IMPORTANT)
-# -------------------------------
+
 class LocalEmbeddings:
     def __init__(self):
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -35,9 +31,7 @@ class LocalEmbeddings:
 embeddings = LocalEmbeddings()
 documents = []
 
-# -------------------------------
-# Local file paths
-# -------------------------------
+
 FILE_PATHS = [
     r"C:\Users\LuckySingh\IVF_chatbot\data\A15337.pdf",
     r"C:\Users\LuckySingh\IVF_chatbot\data\IJCRT2507656.pdf",

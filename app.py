@@ -2,18 +2,14 @@ import streamlit as st
 from uuid import uuid4
 from rag_chain import ask_question
 
-# ---------------------------------
-# Page Config
-# ---------------------------------
+
 st.set_page_config(
     page_title="IVF AI Assistant",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ---------------------------------
-# Session State
-# ---------------------------------
+
 if "sidebar_open" not in st.session_state:
     st.session_state.sidebar_open = True
 
@@ -22,9 +18,7 @@ if "chats" not in st.session_state:
     st.session_state.chats = {chat_id: []}
     st.session_state.active_chat = chat_id
 
-# ---------------------------------
-# CSS (POLISHED)
-# ---------------------------------
+
 st.markdown("""
 <style>
 .stApp {
@@ -77,18 +71,14 @@ input {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------
-# Sidebar Toggle
-# ---------------------------------
+
 st.markdown('<div class="toggle-btn">', unsafe_allow_html=True)
 if st.button("⏪" if st.session_state.sidebar_open else "⏩"):
     st.session_state.sidebar_open = not st.session_state.sidebar_open
     st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------------------------
-# Sidebar (Chat History)
-# ---------------------------------
+
 if st.session_state.sidebar_open:
     with st.sidebar:
         st.markdown("## 💬 Chat History")
@@ -120,26 +110,20 @@ if st.session_state.sidebar_open:
                     st.session_state.active_chat = next(iter(st.session_state.chats))
                 st.rerun()
 
-# ---------------------------------
-# Main Header
-# ---------------------------------
+
 st.markdown(
     "<h2 style='text-align:center;color:white'>🧬 IVF AI Assistant</h2>",
     unsafe_allow_html=True
 )
 
-# ---------------------------------
-# Answer Mode (NO BULLET)
-# ---------------------------------
+
 mode = st.radio(
     "Answer Mode",
-    ["Short", "Detailed"],   # ✅ Bullet removed
+    ["Short", "Detailed"],   
     horizontal=True
 )
 
-# ---------------------------------
-# Chat Area
-# ---------------------------------
+
 chat = st.session_state.chats[st.session_state.active_chat]
 
 if not chat:
@@ -152,9 +136,7 @@ for msg in chat:
     css = "user" if msg["role"] == "user" else "bot"
     st.markdown(f"<div class='{css}'>{msg['content']}</div>", unsafe_allow_html=True)
 
-# ---------------------------------
-# Input
-# ---------------------------------
+
 with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Type your question here…")
     send = st.form_submit_button("Send")
@@ -164,7 +146,7 @@ if send and user_input:
 
     answer = ask_question(user_input, mode)
 
-    # ❌ Hide hallucinations
+    
     if "do not specify" in answer.lower():
         answer = "I’m sorry, the available medical sources don’t contain reliable information on this."
 
